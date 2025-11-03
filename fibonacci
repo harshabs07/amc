@@ -1,37 +1,52 @@
-.text
-    ldr r0, =fib_series
-    ldr r5, =n
-    ldr r4, [r5]
-    
-    mov r1, #0
-    mov r2, #1
+; Directives MUST start in column 1 (no spaces)
+        THUMB
+        AREA    my_code, CODE, READONLY
+        
+        EXPORT  main
+        ENTRY
 
-    cmp r4, #0
-    beq done
+; Labels MUST start in column 1
+main
+        ; Instructions MUST be indented (at least one space)
+        ldr r0, =fib_series
+        ldr r5, =n
+        ldr r4, [r5]        ; r4 = 10 (loop counter)
+        
+        mov r1, #0          ; r1 = Fib[0]
+        mov r2, #1          ; r2 = Fib[1]
 
-    str r1, [r0], #4
-    subs r4, r4, #1
-    beq done
+        cmp r4, #0          ; Check if n = 0
+        beq done
 
-    str r2, [r0], #4
-    subs r4, r4, #1
-    beq done
+        str r1, [r0], #4    ; Store 0, advance pointer
+        subs r4, r4, #1     ; n = n - 1
+        beq done            ; Exit if n was 1
 
-loop:
-    add r3, r1, r2
-    str r3, [r0], #4
-    
-    mov r1, r2
-    mov r2, r3
-    
-    subs r4, r4, #1
-    bne loop
+        str r2, [r0], #4    ; Store 1, advance pointer
+        subs r4, r4, #1     ; n = n - 1
+        beq done            ; Exit if n was 2
 
-done:
-    b done
+loop
+        add r3, r1, r2      ; r3 = next Fib number
+        str r3, [r0], #4    ; Store it, advance pointer
+        
+        mov r1, r2          ; r1 = previous r2
+        mov r2, r3          ; r2 = new Fib number
+        
+        subs r4, r4, #1     ; n = n - 1
+        bne loop            ; Repeat if n != 0
 
-.data
-n:
-    dcd 10
-fib_series:
-    SPACE 10 * 4
+done
+        b done              ; Infinite loop to halt CPU
+
+; Data area directive
+        AREA    my_data, DATA, READWRITE, ALIGN=2
+
+; Data labels
+n
+        DCD     10
+fib_series
+        SPACE   40          ; Reserve 40 bytes (10 words * 4 bytes/word)
+
+; END directive
+        END
