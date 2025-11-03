@@ -1,0 +1,25 @@
+.text
+    ldr r0, =INPUT_VAL
+    ldr r0, [r0]
+
+    mov r1, #1
+    
+    lsl r2, r1, r0
+    
+    ldr r3, =RESULT_LOW
+    strb r2, [r3]
+    
+    lsr r2, r2, #8
+    ldr r3, =RESULT_HIGH
+    strb r2, [r3]
+    
+stop:
+    b stop
+
+.data
+INPUT_VAL:
+    dcd 11
+RESULT_LOW:
+    .space 1
+RESULT_HIGH:
+    .space 1
