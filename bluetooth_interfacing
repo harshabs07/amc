@@ -1,0 +1,97 @@
+#include "inc/tm4c123gh6pm.h"
+#include <stdint.h>
+#include <stdlib.h>
+
+void Delay(unsigned long counter);
+void HC05_init(void);
+char Bluetooth_Read(void);
+void Bluetooth_Write(unsigned char data);
+void Bluetooth_Write_String(char *str);
+
+int main(void)
+{
+    HC05_init();
+    
+    SYSCTL_RCGCGPIO_R |= 0x20;
+    GPIO_PORTF_DIR_R |= 0x0E;
+    GPIO_PORTF_DEN_R |= 0x0E;
+    Delay(10);
+    
+    while(1)
+    {
+        char c = Bluetooth_Read();
+        
+        if( c=='A'){
+            GPIO_PORTF_DATA_R |=(1<<1);
+            Bluetooth_Write_String("RED LED ON\n");
+        }
+        else if( c=='B'){
+            GPIO_PORTF_DATA_R &=~(1<<1);
+            Bluetooth_Write_String("RED LED OFF\n");
+        }
+        else if( c=='C'){
+            GPIO_PORTF_DATA_R |=(1<<2);
+            Bluetooth_Write_String("BLUE LED ON\n");
+        }
+        else if( c=='D'){
+            GPIO_PORTF_DATA_R &=~(1<<2);
+            Bluetooth_Write_String("BLUE LED OFF\n");
+        }
+        if( c=='E'){
+            GPIO_PORTF_DATA_R |=(1<<3);
+            Bluetooth_Write_String("GREEN LED ON\n");
+        }
+        else if( c=='F'){
+            GPIO_PORTF_DATA_R &=~(1<<3);
+            Bluetooth_Write_String("GREEN LED OFF\n");
+        }
+    }
+}
+
+void HC05_init(void)
+{
+    SYSCTL_RCGCUART_R |= 0x20;
+    SYSCTL_RCGCGPIO_R |= 0x10;
+    Delay(1);
+    
+    UART5_CTL_R = 0;
+    UART5_IBRD_R = 104;
+    UART5_FBRD_R = 11;
+    UART5_CC_R = 0;
+    UART5_LCRH_R = 0x60;
+    UART5_CTL_R = 0x301;
+    
+    GPIO_PORTE_DEN_R = 0x30;
+    GPIO_PORTE_AFSEL_R = 0x30;
+    GPIO_PORTE_AMSEL_R = 0;
+    GPIO_PORTE_PCTL_R = 0x00110000;
+}
+
+char Bluetooth_Read(void)
+{
+    char data;
+    while((UART5_FR_R & (1<<4)) != 0);
+    data = UART5_DR_R ;
+    return (unsigned char) data;
+}
+
+void Bluetooth_Write(unsigned char data)
+{
+    while((UART5_FR_R & (1<<5)) != 0);
+    UART5_DR_R = data;
+}
+
+void Bluetooth_Write_String(char *str)
+{
+    while(*str)
+    {
+        Bluetooth_Write(*(str++));
+    }
+}
+
+void Delay(unsigned long counter)
+{
+    unsigned long i = 0;
+    
+    for(i=0; i< counter; i++);
+}
