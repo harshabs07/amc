@@ -1,36 +1,46 @@
-STACK_ADDR_123G EQU    0x20008000
+; Directives and Labels MUST start in column 1
+STACK_ADDR_123G EQU     0x20008000
 
-                THUMB
+        THUMB
 
-                AREA    RESET, DATA, READONLY
-                EXPORT  __Vectors
+        AREA    RESET, DATA, READONLY
+        EXPORT  __Vectors
 __Vectors
-                DCD     STACK_ADDR_123G
-                DCD     Reset_Handler
+        ; Instructions (DCD) MUST be indented
+        DCD     STACK_ADDR_123G
+        DCD     Reset_Handler
 
-                ALIGN
+        ALIGN
 
-                AREA    |.text|, CODE, READONLY
-                ENTRY
-                EXPORT Reset_Handler
+        AREA    |.text|, CODE, READONLY
+        ENTRY
+        EXPORT Reset_Handler
 Reset_Handler
-			LDR R4, =0x20000000
-            MOV     R5, #10
-            SUB R5, R5, #1
-OuterLoop	MOV     R6, R5
-            MOV     R7, R4
-InnerLoop	LDR     R0, [R7]
-			LDR		R1, [R7, #4]
-            CMP     R0, R1
-            BGE     NoSwap
-            STR     R1, [R7]
-            STR     R0, [R7, #4]
-NoSwap		ADD     R7, R7, #4
-            SUB     R6, R6, #1
-            CMP     R6, #0
-            BGT     InnerLoop
-            SUB     R5, R5, #1
-            CMP     R5, #0
-            BGT     OuterLoop
-			B .
-            END
+        LDR R4, =0x20000000  ; Base address of array
+        MOV     R5, #10         ; n = 10
+        SUB R5, R5, #1      ; Outer loop runs n-1 times
+OuterLoop
+        MOV     R6, R5          ; Inner loop counter
+        MOV     R7, R4          ; Reset array pointer
+InnerLoop
+        LDR     R0, [R7]        ; R0 = array[j]
+        LDR		R1, [R7, #4]    ; R1 = array[j+1]
+        CMP     R0, R1          ; Compare array[j] and array[j+1]
+        BGE     NoSwap          ; Branch if R0 >= R1 (already in desc order)
+        
+        ; Swap if R0 < R1
+        STR     R1, [R7]
+        STR     R0, [R7, #4]
+NoSwap
+        ADD     R7, R7, #4      ; Move to next element
+        SUB     R6, R6, #1
+        CMP     R6, #0
+        BGT     InnerLoop       ; Repeat inner loop
+        
+        SUB     R5, R5, #1
+        CMP     R5, #0
+        BGT     OuterLoop       ; Repeat outer loop
+stop
+        B 	    stop            ; Infinite loop to halt CPU
+
+        END
