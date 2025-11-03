@@ -1,0 +1,185 @@
+#include <stdint.h>
+#include <stdlib.h>
+#include "inc/tm4c123gh6pm.h"
+#include "driverlib/sysctl.h"
+
+#define LCD_clear() LCD_command(0x1)
+#define LCD_origin() LCD_command(0x2)
+#define LCD_row1() LCD_command(0x80)
+#define LCD_row2() LCD_command(0xC0)
+
+void shift_outl(unsigned char str);
+void LCD_enable(void);
+void LCD_command(unsigned char command);
+void LCD_putc(unsigned char ascii);
+void LCD_puts(char *lcd_string);
+void LCD_init(void);
+unsigned char key_scan(unsigned int volatile rec_val);
+
+int main(void)
+{
+    uint32_t ui32ADC0Value;
+    unsigned char Dig_val;
+    volatile uint32_t ui32TempAvg, Temp_val;
+    
+    SYSCTL_RCGCGPIO_R |= 0x039;
+    SYSCTL_RCGCADC_R |= 1;
+    
+    GPIO_PORTD_AFSEL_R |= 8;
+    GPIO_PORTD_DEN_R &= ~8;
+    GPIO_PORTD_AMSEL_R |= 8;
+    GPIO_PORTE_DIR_R |= 0x0C;
+    GPIO_PORTE_DEN_R |= 0x0C;
+    GPIO_PORTA_DIR_R |= 0x20;
+    GPIO_PORTA_DEN_R |= 0x20;
+    GPIO_PORTF_DIR_R |= 0x01;
+    GPIO_PORTF_DEN_R |= 0x01;
+    
+    ADC0_ACTSS_R &= ~1;
+    ADC0_EMUX_R &= ~0x000F;
+    ADC0_SSMUX0_R |= 0x05;
+    ADC0_SSCTL0_R |= 0x06;
+    ADC0_ACTSS_R |= 0x01;
+    
+    LCD_init();
+    LCD_row1();
+    LCD_puts("Interfacing");
+    LCD_row2();
+    LCD_puts("Analog KEYPAD");
+    SysCtlDelay(5000000);
+    LCD_clear();
+
+    while(1)
+    {
+        ADC0_PSSI_R |= 1;
+        while((ADC0_RIS_R & 1) == 0);
+        ui32ADC0Value = ADC0_SSFIFO0_R;
+        ADC0_ISC_R = 1;
+        Temp_val = ui32ADC0Value/10;
+        Dig_val = key_scan(Temp_val);
+        SysCtlDelay(50000);
+        LCD_row1();
+        LCD_puts("Press any Key");
+        LCD_row2();
+        if(Dig_val <= 'F')
+            LCD_putc(Dig_val);
+    }
+}
+
+unsigned char key_scan(unsigned int volatile rec_val)
+{
+    if(rec_val>=373 && rec_val<= 374) return '0';
+    else if(rec_val >= 376 && rec_val <= 377) return '1';
+    else if(rec_val >= 379 && rec_val <= 380) return '2';
+    else if(rec_val >= 381 && rec_val <= 382) return '3';
+    else if(rec_val >= 357 && rec_val <= 358) return '4';
+    else if(rec_val >= 362 && rec_val <= 363) return '5';
+    else if(rec_val >= 367 && rec_val <= 368) return '6';
+    else if(rec_val >= 371 && rec_val <= 372) return '7';
+    else if(rec_val >= 317 && rec_val <= 318) return '8';
+    else if(rec_val >= 333 && rec_val <= 334) return '9';
+    else if(rec_val >= 345 && rec_val <= 346) return 'A';
+    else if(rec_val >= 353 && rec_val <= 354) return 'B';
+    else if(rec_val == 0) return 'C';
+    else if(rec_val >= 203 && rec_val <= 204) return 'D';
+    else if(rec_val >= 272 && rec_val <= 273) return 'E';
+    else if(rec_val >= 306 && rec_val <= 307) return 'F';
+    else
+        return 'G';
+}
+
+void LCD_puts(char *lcd_string)
+{
+    while(*lcd_string)
+    {
+        LCD_putc(*lcd_string++);
+    }
+}
+
+void LCD_init()
+{
+    SysCtlDelay(500000);
+    LCD_command(0x30);
+    SysCtlDelay(500000);
+    LCD_command(0x30);
+    SysCtlDelay(500000);
+    LCD_command(0x30);
+    SysCtlDelay(500000);
+    LCD_command(0x20);
+    SysCtlDelay(500000);
+    LCD_command(0x20);
+    SysCtlDelay(500000);
+    LCD_command(0x28);
+    SysCtlDelay(500000);
+    LCD_command(0x0C);
+    SysCtlDelay(500000);
+    LCD_command(0x06);
+    SysCtlDelay(500000);
+    LCD_command(0x01);
+    SysCtlDelay(500000);
+}
+
+unsigned char PP1 = 0x00;
+void LCD_putc(unsigned char ascii)
+{
+    unsigned char volatile num;
+    num = ascii;
+    num = ((num & 0x11)<<3)|((num & 0x22)<<1)|((num & 0x44)>>1)|((num & 0x88)>>3);
+    ascii = num;
+    PP1 = (PP1 & 0xF0)|((ascii>>4) & 0x0F);
+    PP1 = PP1 | 0xA0;
+    PP1 = PP1 & ~(0x40);
+    shift_outl(PP1);
+    SysCtlDelay(500);
+    PP1 = PP1 & ~(0x20);
+    shift_outl(PP1);
+    SysCtlDelay(500);
+    PP1 = (PP1 & 0xF0)|(ascii & 0x0F);
+    PP1 = PP1 | 0xA0;
+    PP1 = PP1 & ~(0x40);
+    shift_outl(PP1);
+    SysCtlDelay(500);
+    PP1 = PP1 & ~(0x20);
+    shift_outl(PP1);
+    SysCtlDelay(500);
+}
+
+void shift_outl(unsigned char str)
+{
+    unsigned char j=0, check;
+    GPIO_PORTA_DATA_R = 0x00;
+    for(j=0;j<=7;j++)
+    {
+        GPIO_PORTE_DATA_R = 0x00;
+        check = (str & (1<<j));
+        if(check)
+            GPIO_PORTE_DATA_R |= 0x04;
+        else
+            GPIO_PORTE_DATA_R = 0x00;
+        GPIO_PORTE_DATA_R |= 0x08;
+    }
+    GPIO_PORTA_DATA_R |= 0x20;
+}
+
+unsigned char PP0 = 0x00;
+void LCD_command(unsigned char command)
+{
+    unsigned char volatile num;
+    num = command;
+    num = ((num & 0x11)<<3)|((num & 0x22)<<1)|((num & 0x44)>>1)|((num & 0x88)>>3);
+    command = num;
+    PP0 = (PP0 & 0xF0)|((command>>4) & 0x0F);
+    PP0 = PP0 | (1<<(7));
+    shift_outl(PP0);
+    SysCtlDelay(500);
+    PP0 = PP0 & ~(0x20);
+    shift_outl(PP0);
+    SysCtlDelay(500);
+    PP0 = (PP0 & 0xF0)|(command & 0x0F);
+    PP0 = PP0 | 0x80;
+    shift_outl(PP0);
+    SysCtlDelay(500);
+    PP0 = PP0 & ~(0x20);
+    shift_outl(PP0);
+    SysCtlDelay(500);
+}
