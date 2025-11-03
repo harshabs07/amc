@@ -1,0 +1,111 @@
+#include <stdint.h>
+#include <stdio.h>
+#include "inc\tm4c123gh6pm.h"
+
+#define ADC_INTR 0x10
+#define ADC_CS   0x20
+#define ADC_RD   0x40
+#define ADC_WR   0x80
+
+void UART0_Init(void);
+void GPIO_Init(void);
+void UART0_SendString(char *str);
+void UART0_Tx(char c);
+unsigned char read_adc(void);
+void delayMs(int n);
+
+int main(void) {
+    unsigned char adc_val;
+    unsigned int percentage;
+    unsigned int volt_int, volt_frac;
+    char buffer[50];
+
+    GPIO_Init();
+    UART0_Init();
+    
+    UART0_SendString("ARM ADC Reading Program Started\r\n");
+    UART0_SendString("-----------------------------\r\n");
+
+    while(1) {
+        adc_val = read_adc();
+        
+        percentage = (unsigned long)adc_val * 100 / 255;
+        volt_int = (unsigned long)adc_val * 5 / 255;
+        volt_frac = ((unsigned long)adc_val * 500 / 255) % 100;
+
+        sprintf(buffer, "Raw: %3d | Percent: %3d%% | Voltage: %d.%02dV\r\n", 
+                adc_val, percentage, volt_int, volt_frac);
+        
+        UART0_SendString(buffer);
+
+        delayMs(500);
+    }
+}
+
+void GPIO_Init(void) {
+    SYSCTL_RCGCGPIO_R |= 0x06;
+    while((SYSCTL_PRGPIO_R & 0x06) == 0) {};
+    
+    GPIO_PORTB_DIR_R &= ~0xFF;
+    GPIO_PORTB_DEN_R |= 0xFF;
+
+    GPIO_PORTC_DIR_R |= (ADC_CS | ADC_RD | ADC_WR);
+    GPIO_PORTC_DIR_R &= ~ADC_INTR;
+    GPIO_PORTC_DEN_R |= (ADC_CS | ADC_RD | ADC_WR | ADC_INTR);
+    
+    GPIO_PORTC_DATA_R |= (ADC_CS | ADC_RD | ADC_WR);
+}
+
+unsigned char read_adc(void) {
+    unsigned char adc_value;
+
+    GPIO_PORTC_DATA_R &= ~(ADC_CS | ADC_WR);
+    
+    delayMs(1);
+    GPIO_PORTC_DATA_R |= ADC_WR;
+    
+    while((GPIO_PORTC_DATA_R & ADC_INTR) != 0) {
+    }
+    
+    GPIO_PORTC_DATA_R &= ~(ADC_CS | ADC_RD);
+    
+    adc_value = GPIO_PORTB_DATA_R & 0xFF;
+    
+    GPIO_PORTC_DATA_R |= (ADC_CS | ADC_RD);
+    
+    return adc_value;
+}
+
+void UART0_Init(void) {
+    SYSCTL_RCGCUART_R |= 0x01;
+    SYSCTL_RCGCGPIO_R |= 0x01;
+    while((SYSCTL_PRGPIO_R & 0x01) == 0) {};
+    
+    GPIO_PORTA_AFSEL_R |= 0x03;
+    GPIO_PORTA_PCTL_R = (GPIO_PORTA_PCTL_R & ~0xFF) | 0x11;
+    GPIO_PORTA_DEN_R |= 0x03;
+    
+    UART0_CTL_R = 0;
+    UART0_IBRD_R = 104;
+    UART0_FBRD_R = 11;
+    UART0_LCRH_R = 0x60;
+    UART0_CTL_R = 0x301;
+}
+
+void UART0_Tx(char c) {
+    while((UART0_FR_R & 0x20) != 0);
+    UART0_DR_R = c;
+}
+
+void UART0_SendString(char *str) {
+    while(*str) {
+        UART0_Tx(*str++);
+    }
+}
+
+void delayMs(int n) {
+    int i, j;
+    for(i = 0 ; i < n; i++)
+        for(j = 0; j < 3180; j++)
+            {}
+}
