@@ -1,30 +1,41 @@
-.text
-    ldr r0, =x
-    ldr r1, =y
-    ldr r2, =n
-    ldr r2, [r2]
-    
-    mov r4, #0
+THUMB
 
-loop:
-    ldr r5, [r0], #4
-    ldr r6, [r1], #4
-    
-    mul r7, r5, r6
-    add r4, r4, r7
-    
-    subs r2, r2, #1
-    bne loop
+        AREA    my_code, CODE, READONLY
+        
+        EXPORT  main
+        ENTRY
 
-done:
-    ldr r8, =result
-    str r4, [r8]
+main
+        ldr r1, =x
+        ldr r2, =y
+        ldr r3, =n
+        ldr r3, [r3]
+        
+        mov r4, #0      ; R4 is the accumulator
 
-stop:
-    b stop
+loop
+        ldr r5, [r1], #4
+        ldr r6, [r2], #4
+        
+        mul r7, r5, r6
+        add r4, r4, r7  ; Add to accumulator R4
 
-.data
-x:      dcd 1, 2, 3, 4
-y:      dcd 5, 6, 7, 8
-n:      dcd 4
-result: dcd 0
+        subs r3, r3, #1
+        bne loop
+
+done
+        ; At this point, R4 holds the final answer (70)
+        ldr r8, =result
+        str r4, [r8]    ; Store the final answer into the 'result' variable
+
+stop
+        b stop
+
+        AREA    my_data, DATA, READWRITE, ALIGN=2
+
+x       DCD     1, 2, 3, 4
+y       DCD     5, 6, 7, 8
+n       DCD     4
+result  DCD     0       ; The answer will be stored here
+
+        END
