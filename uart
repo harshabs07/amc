@@ -1,0 +1,50 @@
+#include <stdint.h>
+#include "inc\tm4c123gh6pm.h"
+
+void UART0Tx(char c);
+void delayMs(int n);
+
+int main(void)
+{
+    SYSCTL_RCGCUART_R = 1;
+    SYSCTL_RCGCGPIO_R = 1;
+
+    UART0_CTL_R = 0;
+    UART0_IBRD_R = 104;
+    UART0_FBRD_R = 11;
+    UART0_CC_R = 0;
+    UART0_LCRH_R = 0x60;
+    UART0_CTL_R = 0x301;
+
+    GPIO_PORTA_DEN_R = 0x03;
+    GPIO_PORTA_AFSEL_R = 0x03;
+    GPIO_PORTA_PCTL_R = 0x11;
+
+    delayMs(1);
+
+    UART0Tx('E');
+    UART0Tx('N');
+    UART0Tx('T');
+    UART0Tx('E');
+    UART0Tx('R');
+    UART0Tx(' ');
+    UART0Tx('T');
+    UART0Tx('E');
+    UART0Tx('X');
+    UART0Tx('T');
+    UART0Tx(':');
+}
+
+void UART0Tx(char c)
+{
+    while((UART0_FR_R & 0x20) != 0);
+    UART0_DR_R = c;
+}
+
+void delayMs(int n)
+{
+    int i, j;
+    for(i = 0 ; i < n; i++)
+        for(j = 0; j < 5000; j++)
+            {}
+}
