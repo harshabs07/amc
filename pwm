@@ -1,0 +1,41 @@
+#include <stdint.h>
+#include "inc\tm4c123gh6pm.h"
+
+int main(void)
+{
+void delayMs(int n);
+int x = 0xFF00;
+
+SYSCTL_RCGCPWM_R = 0x02; 
+SYSCTL_RCGCGPIO_R = 0x20; 
+SYSCTL_RCC_R = 0x00100000; 
+SYSCTL_RCC_R = 0x000E0000; 
+
+GPIO_PORTF_AFSEL_R = 0x08; 
+GPIO_PORTF_PCTL_R = ~0x0000F000; 
+GPIO_PORTF_PCTL_R = 0x00005000;
+GPIO_PORTF_DEN_R = 0x08; 
+
+PWM1_3_CTL_R = 0; 
+PWM1_3_GENB_R = 0x0000008C; 
+
+PWM1_3_LOAD_R = 0xFFFF; 
+PWM1_3_CMPA_R = x; 
+PWM1_3_CTL_R = 0x01; 
+PWM1_ENABLE_R = 0x80; 
+
+for(;;)
+{
+
+PWM1_3_CMPA_R = x;
+delayMs(300);
+}
+}
+
+void delayMs(int n)
+{
+int i, j;
+for(i = 0 ; i < n; i++)
+for(j = 0; j < 3180; j++)
+{} 
+}
