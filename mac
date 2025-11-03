@@ -1,0 +1,30 @@
+.text
+    ldr r0, =x
+    ldr r1, =y
+    ldr r2, =n
+    ldr r2, [r2]
+    
+    mov r4, #0
+
+loop:
+    ldr r5, [r0], #4
+    ldr r6, [r1], #4
+    
+    mul r7, r5, r6
+    add r4, r4, r7
+    
+    subs r2, r2, #1
+    bne loop
+
+done:
+    ldr r8, =result
+    str r4, [r8]
+
+stop:
+    b stop
+
+.data
+x:      dcd 1, 2, 3, 4
+y:      dcd 5, 6, 7, 8
+n:      dcd 4
+result: dcd 0
