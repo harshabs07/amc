@@ -1,22 +1,38 @@
-.text
-    ldr r0, =INPUTS
-    ldr r0, [r0]
-    
-    ldr r1, =SELECT
-    ldr r1, [r1]
-    
-    lsr r2, r0, r1
-    and r2, r2, #1
-    
-    ldr r3, =RESULT
-    str r2, [r3]
-    
-stop:
-    b stop
+; Directives MUST start in column 1 (no spaces)
+        THUMB
+        AREA    my_code, CODE, READONLY
+        
+        EXPORT  main
+        ENTRY
 
-.data
-INPUTS: dcd 0b1011
-SELECT: dcd 0b10
-RESULT: dcd 0
+; Labels MUST start in column 1
+main
+        ; Instructions MUST be indented (at least one space)
+        ldr r0, =INPUTS
+        ldr r0, [r0]        ; r0 = 0b1011
+        
+        ldr r1, =SELECT
+        ldr r1, [r1]        ; r1 = 0b10 (which is 2)
+        
+        lsr r2, r0, r1      ; r2 = r0 >> r1  (0b1011 >> 2) -> 0b10
+        and r2, r2, #1      ; r2 = r2 & 1    (0b10 & 1)   -> 0b0
+        
+        ldr r3, =RESULT
+        str r2, [r3]        ; Store the result (0)
+        
+stop
+        b stop
 
+; Data area directive
+        AREA    my_data, DATA, READWRITE, ALIGN=2
 
+; Data labels
+INPUTS
+        DCD     0b1011
+SELECT
+        DCD     0b10
+RESULT
+        DCD     0
+
+; END directive
+        END
