@@ -1,0 +1,37 @@
+.text
+    ldr r0, =fib_series
+    ldr r5, =n
+    ldr r4, [r5]
+    
+    mov r1, #0
+    mov r2, #1
+
+    cmp r4, #0
+    beq done
+
+    str r1, [r0], #4
+    subs r4, r4, #1
+    beq done
+
+    str r2, [r0], #4
+    subs r4, r4, #1
+    beq done
+
+loop:
+    add r3, r1, r2
+    str r3, [r0], #4
+    
+    mov r1, r2
+    mov r2, r3
+    
+    subs r4, r4, #1
+    bne loop
+
+done:
+    b done
+
+.data
+n:
+    dcd 10
+fib_series:
+    SPACE 10 * 4
