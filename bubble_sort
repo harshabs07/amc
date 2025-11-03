@@ -1,0 +1,36 @@
+STACK_ADDR_123G EQU    0x20008000
+
+                THUMB
+
+                AREA    RESET, DATA, READONLY
+                EXPORT  __Vectors
+__Vectors
+                DCD     STACK_ADDR_123G
+                DCD     Reset_Handler
+
+                ALIGN
+
+                AREA    |.text|, CODE, READONLY
+                ENTRY
+                EXPORT Reset_Handler
+Reset_Handler
+			LDR R4, =0x20000000
+            MOV     R5, #10
+            SUB R5, R5, #1
+OuterLoop	MOV     R6, R5
+            MOV     R7, R4
+InnerLoop	LDR     R0, [R7]
+			LDR		R1, [R7, #4]
+            CMP     R0, R1
+            BGE     NoSwap
+            STR     R1, [R7]
+            STR     R0, [R7, #4]
+NoSwap		ADD     R7, R7, #4
+            SUB     R6, R6, #1
+            CMP     R6, #0
+            BGT     InnerLoop
+            SUB     R5, R5, #1
+            CMP     R5, #0
+            BGT     OuterLoop
+			B .
+            END
