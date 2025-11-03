@@ -1,0 +1,136 @@
+#include <stdint.h>
+#include "inc\tm4c123gh6pm.h"
+
+void delayMs(int n);
+
+int main(void)
+{
+int i;
+    SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R5;
+ SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+ SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R2;
+    GPIO_PORTF_DIR_R = 0x0E;
+ GPIO_PORTB_DIR_R = 0x08;
+ GPIO_PORTC_DIR_R = 0x10;
+    GPIO_PORTF_DEN_R = 0x0E;
+    GPIO_PORTB_DEN_R = 0x08;
+ GPIO_PORTC_DEN_R = 0x10;
+
+  while(1)
+    {
+for( i=0;i<13;i++){
+GPIO_PORTF_DATA_R = 0x04;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTF_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;   
+        delayMs(5);
+
+ GPIO_PORTB_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTB_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTC_DATA_R = 0x10;  
+        delayMs(5);
+
+        GPIO_PORTC_DATA_R = 0;   
+        delayMs(5);
+
+}
+delayMs(1000);
+for( i=0;i<13;i++){
+GPIO_PORTF_DATA_R = 0x04;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTF_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;   
+        delayMs(5);
+
+ GPIO_PORTB_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTB_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTC_DATA_R = 0x10;  
+        delayMs(5);
+
+        GPIO_PORTC_DATA_R = 0;   
+        delayMs(5);
+
+}delayMs(1000);
+for( i=0;i<13;i++){
+GPIO_PORTF_DATA_R = 0x04;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTF_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;   
+        delayMs(5);
+
+ GPIO_PORTB_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTB_DATA_R = 0;      
+        delayMs(5);
+   
+       GPIO_PORTC_DATA_R = 0x10;  
+        delayMs(5);
+
+        GPIO_PORTC_DATA_R = 0;   
+        delayMs(5);
+
+}delayMs(1000);
+        
+for(i=0;i<13;i++){
+GPIO_PORTC_DATA_R = 0x10;  
+        delayMs(5);
+
+        GPIO_PORTC_DATA_R = 0;   
+        delayMs(5);
+
+GPIO_PORTB_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTB_DATA_R = 0;      
+        delayMs(5);
+
+GPIO_PORTF_DATA_R = 0x08;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;   
+        delayMs(5);
+
+GPIO_PORTF_DATA_R = 0x04;  
+        delayMs(5);
+
+        GPIO_PORTF_DATA_R = 0;      
+        delayMs(5);
+}delayMs(1000);
+}
+
+}
+
+void delayMs(int n)
+{
+    int i, j;
+    for(i = 0 ; i < n; i++)
+        for(j = 0; j < 4180; j++)
+        {}
+}
