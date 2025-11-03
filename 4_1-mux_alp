@@ -1,29 +1,22 @@
-ORG 0000h	
-        MOV P1, #0FFh
-        MOV P3, #0FFh
-        MOV P2, #00h
+.text
+    ldr r0, =INPUTS
+    ldr r0, [r0]
+    
+    ldr r1, =SELECT
+    ldr r1, [r1]
+    
+    lsr r2, r0, r1
+    and r2, r2, #1
+    
+    ldr r3, =RESULT
+    str r2, [r3]
+    
+stop:
+    b stop
 
-MAIN:   MOV A, P3
-        ANL A, #03h          
+.data
+INPUTS: dcd 0b1011
+SELECT: dcd 0b10
+RESULT: dcd 0
 
-        CJNE A, #03h, SEL2   
-        MOV C, P1.3
-        MOV P2.0, C
-        SJMP MAIN
 
-SEL2:   CJNE A, #02h, SEL1   
-        MOV C, P1.2
-        MOV P2.0, C
-        SJMP MAIN
-
-SEL1:   CJNE A, #01h, SEL0  
-        MOV C, P1.1
-        MOV P2.0, C
-        SJMP MAIN
-
-SEL0:                      
-        MOV C, P1.0
-        MOV P2.0, C
-        SJMP MAIN
-
-        END
