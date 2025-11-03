@@ -1,36 +1,51 @@
-.text
-    ldr r0, =x
-    ldr r1, =y
-    ldr r2, =n
-    ldr r2, [r2]
-    
-    mov r4, #0
+; Directives MUST start in column 1 (no spaces)
+        THUMB
+        AREA    my_code, CODE, READONLY
+        
+        EXPORT  main
+        ENTRY
 
-loop:
-    ldr r5, [r0], #4
-    ldr r6, [r1], #4
-    
-    sub r7, r5, r6
-    
-    cmp r7, #0
-    bge no_neg
-    rsbs r7, r7, #0
+; Labels MUST start in column 1
+main
+        ; Instructions MUST be indented (at least one space)
+        ldr r0, =x
+        ldr r1, =y
+        ldr r2, =n
+        ldr r2, [r2]
+        
+        mov r4, #0      ; r4 will be the final sum
 
-no_neg:
-    add r4, r4, r7
-    
-    subs r2, r2, #1
-    bne loop
+loop
+        ldr r5, [r0], #4  ; r5 = x[i]
+        ldr r6, [r1], #4  ; r6 = y[i]
+        
+        sub r7, r5, r6  ; r7 = x[i] - y[i]
+        
+        cmp r7, #0      ; check if r7 is negative
+        bge no_neg      ; if (r7 >= 0), skip negation
+        rsbs r7, r7, #0 ; if negative, r7 = 0 - r7 (negate)
 
-done:
-    ldr r8, =result
-    str r4, [r8]
+no_neg
+        add r4, r4, r7  ; r4 = r4 + abs(r7)
+        
+        subs r2, r2, #1 ; decrement loop counter
+        bne loop        ; loop if counter is not zero
 
-stop:
-    b stop
+done
+        ldr r8, =result
+        str r4, [r8]    ; store the final sum in 'result'
 
-.data
-x:      dcd 10, 20, 30, 40
-y:      dcd 15, 16, 17, 18
-n:      dcd 4
-result: dcd 0
+stop
+        b stop
+
+; Data area directive
+        AREA    my_data, DATA, READWRITE, ALIGN=2
+
+; Data labels
+x       DCD     10, 20, 30, 40
+y       DCD     15, 16, 17, 18
+n       DCD     4
+result  DCD     0       ; The final answer will be stored here
+
+; END directive
+        END
