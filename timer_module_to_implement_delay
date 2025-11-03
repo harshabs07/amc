@@ -1,0 +1,48 @@
+#include <stdint.h>
+#include "inc/tm4c123gh6pm.h"
+
+#define CLOCK_CYCLES_PER_MS 16000
+
+void Timer0_DelayMs_Init(void) {
+    SYSCTL_RCGCTIMER_R |= SYSCTL_RCGCTIMER_R0;
+    volatile uint32_t delay = SYSCTL_RCGCTIMER_R;
+    (void)delay;
+    TIMER0_CTL_R &= ~TIMER_CTL_TAEN;
+    TIMER0_CFG_R = TIMER_CFG_32_BIT_TIMER;
+    TIMER0_TAMR_R = TIMER_TAMR_TAMR_1_SHOT;
+    TIMER0_TAMR_R &= ~TIMER_TAMR_TACDIR;
+    TIMER0_TAILR_R = CLOCK_CYCLES_PER_MS - 1;
+    TIMER0_ICR_R = TIMER_ICR_TATOCINT;
+}
+
+void delayMs(int n) {
+    int i;
+    for(i = 0; i < n; i++) {
+        TIMER0_TAILR_R = CLOCK_CYCLES_PER_MS - 1;
+        TIMER0_ICR_R = TIMER_ICR_TATOCINT;
+        TIMER0_CTL_R |= TIMER_CTL_TAEN;
+        while ((TIMER0_RIS_R & TIMER_RIS_TATORIS) == 0) {
+        }
+    }
+}
+
+int main(void)
+{
+    SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R5;
+    GPIO_PORTF_DIR_R = 0x0E;
+    GPIO_PORTF_DEN_R = 0x0E;
+
+    Timer0_DelayMs_Init();
+
+    while(1)
+    {
+        GPIO_PORTF_DATA_R = 0x02;
+        delayMs(250);
+
+        GPIO_PORTF_DATA_R = 0x04;
+        delayMs(250);
+
+        GPIO_PORTF_DATA_R = 0x08;
+        delayMs(250);
+    }
+}
