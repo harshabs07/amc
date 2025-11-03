@@ -1,0 +1,36 @@
+#include<stdint.h>
+#include "inc\TM4C123GH6PM.h"
+void delayMs (int n);
+int value;
+int main(void)
+{
+SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R3;
+SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R5;
+
+GPIO_PORTD_LOCK_R = 0x4C4F434B;
+GPIO_PORTD_CR_R = 0x80;
+GPIO_PORTD_DIR_R = 0Xf0;
+GPIO_PORTD_DEN_R = 0Xf0;
+
+GPIO_PORTF_DIR_R = 0x08;
+GPIO_PORTD_DEN_R = 0X18;
+GPIO_PORTD_PUR_R = 0X10;
+
+while (1)
+{
+value = GPIO_PORTF_DATA_R;
+value = ~value;
+value = value >> 1;
+GPIO_PORTF_DATA_R = value;
+value = value << 4;
+GPIO_PORTD_DATA_R = value;
+}
+}
+
+void delayMs (int n)
+{
+int i,j;
+for (i=0;i<n;i++)
+for (j=0;j<4180;j++){
+}
+}
