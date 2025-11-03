@@ -1,25 +1,40 @@
-.text
-    ldr r0, =INPUT_VAL
-    ldr r0, [r0]
+; Directives MUST start in column 1 (no spaces)
+        THUMB
+        AREA    my_code, CODE, READONLY
+        
+        EXPORT  main
+        ENTRY
 
-    mov r1, #1
-    
-    lsl r2, r1, r0
-    
-    ldr r3, =RESULT_LOW
-    strb r2, [r3]
-    
-    lsr r2, r2, #8
-    ldr r3, =RESULT_HIGH
-    strb r2, [r3]
-    
-stop:
-    b stop
+; Labels MUST start in column 1
+main
+        ; Instructions MUST be indented (at least one space)
+        ldr r0, =INPUT_VAL
+        ldr r0, [r0]
 
-.data
-INPUT_VAL:
-    dcd 11
-RESULT_LOW:
-    .space 1
-RESULT_HIGH:
-    .space 1
+        mov r1, #1
+        
+        lsl r2, r1, r0      ; r2 = 1 << 11 (0x800)
+        
+        ldr r3, =RESULT_LOW
+        strb r2, [r3]       ; Store low byte (0x00)
+        
+        lsr r2, r2, #8      ; Shift r2 right by 8 bits (r2 = 0x08)
+        ldr r3, =RESULT_HIGH
+        strb r2, [r3]       ; Store new low byte (0x08)
+        
+stop
+        b stop
+
+; Data area directive
+        AREA    my_data, DATA, READWRITE, ALIGN=2
+
+; Data labels
+INPUT_VAL
+        DCD     11
+RESULT_LOW
+        SPACE   1           ; Reserve 1 byte
+RESULT_HIGH
+        SPACE   1           ; Reserve 1 byte
+
+; END directive
+        END
